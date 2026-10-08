@@ -71,55 +71,82 @@ public class TareaServicio {
      * Reporte en texto plano para el resumen diario.
      */
     public String generarReporte(LocalDate hoy) {
-        String r = "";
-        r = r + "=== REPORTE DE TAREAS ===\n";
-        int total = 0;
-        int hechas = 0;
-        int vencidas = 0;
-        int altas = 0;
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== REPORTE DE TAREAS ===\n");
+
+        int total = repositorio.contar();
+        int completadas = contarCompletadas();
+        int vencidas = contarVencidas(hoy);
+        int altas = contarAltasPendientes();
+
+        sb.append("Total: ").append(total).append("\n");
+        sb.append("Completadas: ").append(completadas).append("\n");
+        sb.append("Pendientes: ").append(total - completadas).append("\n");
+        sb.append("Vencidas: ").append(vencidas).append("\n");
+        sb.append("Alta prioridad pendientes: ").append(altas).append("\n");
+        sb.append(calificarAvance(total, completadas));
+        sb.append("--- Pendientes ---\n");
+        sb.append(listarPendientesTexto());
+
+        return sb.toString();
+    }
+
+    private int contarCompletadas() {
+        int count = 0;
         for (Tarea t : repositorio.todas()) {
-            total = total + 1;
             if (t.isCompletada()) {
-                hechas = hechas + 1;
-            } else {
-                if (t.getFechaLimite() != null) {
-                    if (t.getFechaLimite().isBefore(hoy)) {
-                        vencidas = vencidas + 1;
-                    }
-                }
-                if (t.getPrioridad() == Prioridad.ALTA) {
-                    altas = altas + 1;
-                }
+                count++;
             }
         }
-        r = r + "Total: " + total + "\n";
-        r = r + "Completadas: " + hechas + "\n";
-        r = r + "Pendientes: " + (total - hechas) + "\n";
-        r = r + "Vencidas: " + vencidas + "\n";
-        r = r + "Alta prioridad pendientes: " + altas + "\n";
-        if (total > 0) {
-            int porcentaje = hechas * 100 / total;
-            if (porcentaje >= 80) {
-                r = r + "Estado: EXCELENTE (" + porcentaje + "%)\n";
-            } else if (porcentaje >= 50) {
-                r = r + "Estado: BIEN (" + porcentaje + "%)\n";
-            } else {
-                r = r + "Estado: ATRASADO (" + porcentaje + "%)\n";
+        return count;
+    }
+
+    private int contarVencidas(LocalDate hoy) {
+        int count = 0;
+        for (Tarea t : repositorio.todas()) {
+            if (!t.isCompletada() && t.getFechaLimite() != null && t.getFechaLimite().isBefore(hoy)) {
+                count++;
             }
-        } else {
-            r = r + "Estado: SIN TAREAS\n";
         }
-        r = r + "--- Pendientes ---\n";
+        return count;
+    }
+
+    private int contarAltasPendientes() {
+        int count = 0;
+        for (Tarea t : repositorio.todas()) {
+            if (!t.isCompletada() && t.getPrioridad() == Prioridad.ALTA) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private String calificarAvance(int total, int completadas) {
+        if (total == 0) {
+            return "Estado: SIN TAREAS\n";
+        }
+        int porcentaje = completadas * 100 / total;
+        if (porcentaje >= 80) {
+            return "Estado: EXCELENTE (" + porcentaje + "%)\n";
+        }
+        if (porcentaje >= 50) {
+            return "Estado: BIEN (" + porcentaje + "%)\n";
+        }
+        return "Estado: ATRASADO (" + porcentaje + "%)\n";
+    }
+
+    private String listarPendientesTexto() {
+        StringBuilder sb = new StringBuilder();
         for (Tarea t : repositorio.todas()) {
             if (!t.isCompletada()) {
-                r = r + "* " + t.getTitulo();
+                sb.append("* ").append(t.getTitulo());
                 if (t.getFechaLimite() != null) {
-                    r = r + " (vence " + t.getFechaLimite() + ")";
+                    sb.append(" (vence ").append(t.getFechaLimite()).append(")");
                 }
-                r = r + "\n";
+                sb.append("\n");
             }
         }
-        return r;
+        return sb.toString();
     }
 
     private Tarea obtener(int id) {
