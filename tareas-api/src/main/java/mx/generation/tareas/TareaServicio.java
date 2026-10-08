@@ -28,6 +28,7 @@ public class TareaServicio {
     }
 
     public boolean eliminar(int id) {
+        obtener(id);
         return repositorio.eliminar(id);
     }
 
