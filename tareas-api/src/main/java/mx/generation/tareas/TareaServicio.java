@@ -22,7 +22,7 @@ public class TareaServicio {
 
     /** Marca la tarea como completada. Si el id no existe, lanza TareaNoEncontradaException. */
     public Tarea completar(int id) {
-        Tarea tarea = repositorio.buscar(id);
+        Tarea tarea = obtener(id);
         tarea.marcarCompletada();
         return tarea;
     }
