@@ -48,7 +48,7 @@ public class TareaServicio {
     public List<Tarea> listarPorPrioridadMinima(Prioridad minima) {
         List<Tarea> resultado = new ArrayList<>();
         for (Tarea t : listarPendientes()) {
-            if (t.getPrioridad().ordinal() > minima.ordinal()) {
+            if (t.getPrioridad().ordinal() >= minima.ordinal()) {
                 resultado.add(t);
             }
         }
