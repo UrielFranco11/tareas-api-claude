@@ -64,7 +64,7 @@ public class TareaServicio {
         if (tarea.getFechaLimite() == null) {
             return Long.MAX_VALUE;
         }
-        return ChronoUnit.DAYS.between(tarea.getFechaLimite(), hoy);
+        return ChronoUnit.DAYS.between(hoy, tarea.getFechaLimite());
     }
 
     /**
